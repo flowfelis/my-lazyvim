@@ -57,3 +57,24 @@ vim.keymap.set("n", "<leader>q", "<CMD>bdelete<CR>", { noremap = true, silent = 
 -- Move to next/prev buffer
 vim.keymap.set("n", "<leader>]", "<CMD>bnext<CR>", { noremap = true, silent = true, desc = "Next buffer" })
 vim.keymap.set("n", "<leader>[", "<CMD>bprev<CR>", { noremap = true, silent = true, desc = "Prev buffer" })
+
+-- TERMINAL
+-- Go to terminal normal mode with kj
+vim.keymap.set("t", "kj", "<C-\\><C-n>", { noremap = true, silent = true, desc = "Escape terminal mode" })
+-- Python Code running with uv
+-- TODO:after having terminal
+-- Run current file with uv
+vim.keymap.set("n", "<leader>tx", function()
+  local current_file = vim.fn.expand("%:p")
+  require("snacks").terminal.open(
+    "uv run python " .. current_file,
+    { auto_close = false, })
+end, { desc = "uv run" })
+
+-- Run current file with uv interactively
+vim.keymap.set("n", "<leader>tX", function()
+  local current_file = vim.fn.expand("%:p")
+  require("snacks").terminal.open(
+    "uv run python -i " .. current_file,
+    { auto_close = true, })
+end, { desc = "uv run interactive" })

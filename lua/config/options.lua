@@ -15,7 +15,7 @@ if vim.g.neovide then
   vim.g.neovide_padding_left = 5
 end
 
-vim.o.background = "light"
+-- General Options
 vim.o.number = true
 vim.o.relativenumber = false
 vim.g.autoformat = false
