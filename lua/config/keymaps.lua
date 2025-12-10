@@ -77,4 +77,4 @@ vim.keymap.set("n", "<leader>tX", function()
   require("snacks").terminal.open(
     "uv run python -i " .. current_file,
     { auto_close = true, })
-end, { desc = "uv run interactive" })
+end, { desc = "uv run interactively" })
