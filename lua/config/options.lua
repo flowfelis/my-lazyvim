@@ -20,3 +20,4 @@ vim.o.number = true
 vim.o.relativenumber = false
 vim.g.autoformat = false
 vim.opt.scrolloff = 0
+vim.opt.swapfile = false

@@ -22,13 +22,13 @@ vim.api.nvim_create_autocmd("User", {
 })
 
 -- Change to Projects directory on startup
-vim.api.nvim_create_autocmd("User", {
-  callback = function()
-    -- Only change dir when no files were passed to nvim
-    if vim.fn.argc() == 0 then
-      local projects = vim.fn.expand("~/Projects")
-      -- set current working directory
-      vim.api.nvim_set_current_dir(projects)
-    end
-  end,
-})
+-- vim.api.nvim_create_autocmd("User", {
+--   callback = function()
+--     -- Only change dir when no files were passed to nvim
+--     if vim.fn.argc() == 0 then
+--       local projects = vim.fn.expand("~/Projects")
+--       -- set current working directory
+--       vim.api.nvim_set_current_dir(projects)
+--     end
+--   end,
+-- })

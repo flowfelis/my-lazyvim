@@ -9,16 +9,19 @@ vim.api.nvim_set_keymap("i", "kj", "<Esc>", { noremap = false })
 -- Select a line
 vim.keymap.set("n", "vl", "_v$h", { noremap = true, silent = true, desc = "Select a line" })
 -- Select all
-vim.keymap.set({ "n", "i" }, "<D-a>", "<Esc>ggVG", { noremap = true, silent = true, desc = "Select all" })
+vim.keymap.set({ "n", "i" }, "<leader>A", "<Esc>ggVG", { noremap = true, silent = true, desc = "Select all" })
+-- Yank All
+vim.keymap.set("n", "<leader>ya", "ggVGy", { noremap = true, silent = true, desc = "Yank all" })
 
 -- Allow clipboard copy paste in neovide
 if vim.g.neovide then
-  vim.keymap.set("n", "<D-s>", ":w<CR>") -- Save
-  vim.keymap.set("v", "<D-c>", '"+y') -- Copy
-  vim.keymap.set("n", "<D-v>", '"+p') -- Paste normal mode
-  vim.keymap.set("v", "<D-v>", '"+p') -- Paste visual mode
-  vim.keymap.set("c", "<D-v>", "<C-R>+") -- Paste command mode
-  vim.keymap.set("i", "<D-v>", '<Esc>"+pl') -- Paste insert mode
+  -- vim.keymap.set("n", "<D-s>", ":w<CR>") -- Save
+  vim.keymap.set("v", "<C-S-c>", '"+y') -- Copy
+  vim.keymap.set("n", "<C-S-v>", '"+p') -- Paste normal mode
+  vim.keymap.set("v", "<C-S-v>", '"+p') -- Paste visual mode
+  vim.keymap.set("c", "<C-S-v>", "<C-R>+") -- Paste command mode
+  vim.keymap.set("i", "<C-S-v>", '<Esc>"+pa') -- Paste insert mode
+  vim.keymap.set("t", "<C-S-v>", [[<C-\><C-n>"+pi]]) -- Paste terminal mode
 end
 
 -- WINDOWS
@@ -58,23 +61,61 @@ vim.keymap.set("n", "<leader>q", "<CMD>bdelete<CR>", { noremap = true, silent = 
 vim.keymap.set("n", "<leader>]", "<CMD>bnext<CR>", { noremap = true, silent = true, desc = "Next buffer" })
 vim.keymap.set("n", "<leader>[", "<CMD>bprev<CR>", { noremap = true, silent = true, desc = "Prev buffer" })
 
+vim.keymap.del("n", "<S-h>")
+vim.keymap.del("n", "<S-l>")
+
 -- TERMINAL
 -- Go to terminal normal mode with kj
 vim.keymap.set("t", "kj", "<C-\\><C-n>", { noremap = true, silent = true, desc = "Escape terminal mode" })
 -- Python Code running with uv
--- TODO:after having terminal
--- Run current file with uv
 vim.keymap.set("n", "<leader>tx", function()
   local current_file = vim.fn.expand("%:p")
-  require("snacks").terminal.open(
-    "uv run python " .. current_file,
-    { auto_close = false, })
+  require("snacks").terminal.open("uv run python " .. current_file, { auto_close = false })
 end, { desc = "uv run" })
 
 -- Run current file with uv interactively
 vim.keymap.set("n", "<leader>tX", function()
   local current_file = vim.fn.expand("%:p")
-  require("snacks").terminal.open(
-    "uv run python -i " .. current_file,
-    { auto_close = true, })
+  require("snacks").terminal.open("uv run python -i " .. current_file, { auto_close = true })
 end, { desc = "uv run interactively" })
+
+-- DAP
+-- Start/Continue DAP
+vim.keymap.set(
+  "n",
+  "<F5>",
+  "<CMD>lua require'dap'.continue()<CR>",
+  { noremap = true, silent = true, desc = "DAP Start/Continue" }
+)
+-- Step Over
+vim.keymap.set(
+  "n",
+  "<F4>",
+  "<CMD>lua require'dap'.step_over()<CR>",
+  { noremap = true, silent = true, desc = "DAP Step Over" }
+)
+-- Step Into
+vim.keymap.set(
+  "n",
+  "<F3>",
+  "<CMD>lua require'dap'.step_into()<CR>",
+  { noremap = true, silent = true, desc = "DAP Step Into" }
+)
+-- Step Out
+vim.keymap.set(
+  "n",
+  "<F6>",
+  "<CMD>lua require'dap'.step_out()<CR>",
+  { noremap = true, silent = true, desc = "DAP Step Out" }
+)
+-- Terminate DAP
+vim.keymap.set(
+  "n",
+  "<F2>",
+  "<CMD>lua require'dap'.terminate()<CR>",
+  { noremap = true, silent = true, desc = "DAP Terminate" }
+)
+
+-- Git Fugitive
+-- Keypmap to open Git pane
+vim.keymap.set("n", "<leader>gg", "<CMD>Git<CR>", { noremap = true, silent = true, desc = "Git Pane" })
