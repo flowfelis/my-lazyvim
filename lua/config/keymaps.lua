@@ -12,6 +12,8 @@ vim.keymap.set("n", "vl", "_v$h", { noremap = true, silent = true, desc = "Selec
 vim.keymap.set({ "n", "i" }, "<leader>A", "<Esc>ggVG", { noremap = true, silent = true, desc = "Select all" })
 -- Yank All
 vim.keymap.set("n", "<leader>ya", "ggVGy", { noremap = true, silent = true, desc = "Yank all" })
+-- Yank till current cursor position to end of line
+-- vim.keymap.set("n", "V", "y$", { noremap = true, silent = true, desc = "Yank till end of line" })
 
 -- Allow clipboard copy paste in neovide
 if vim.g.neovide then
@@ -40,6 +42,9 @@ vim.keymap.set("n", "<Left>", "10<C-w>>", { noremap = true, silent = true, desc 
 -- Open a vertical split
 vim.keymap.set("n", "<leader>v", "<C-w>v", { noremap = true, silent = true, desc = "Vertical split a window" })
 
+-- Open horizontal split
+vim.keymap.set("n", "<leader>V", "<C-w>s", { noremap = true, silent = true, desc = "Horizontal split a window" })
+
 --BUFFERS
 -- Hide buffer
 vim.keymap.del("n", "<leader>wm")
@@ -67,6 +72,37 @@ vim.keymap.del("n", "<S-l>")
 -- TERMINAL
 -- Go to terminal normal mode with kj
 vim.keymap.set("t", "kj", "<C-\\><C-n>", { noremap = true, silent = true, desc = "Escape terminal mode" })
+
+-- Multi-terminal toggle: <C-/> alone shows/hides ALL terminals,
+-- N<C-/> (e.g. 2<C-/>) toggles a specific numbered terminal.
+local function smart_terminal_toggle()
+  if vim.v.count1 > 1 then
+    -- Numbered terminal: toggle/create at current root dir
+    Snacks.terminal.toggle(nil, { cwd = LazyVim.root(), count = vim.v.count1 })
+  else
+    local terms = Snacks.terminal.list()
+    if #terms == 0 then
+      -- No terminals yet: open #1
+      Snacks.terminal.toggle(nil, { cwd = LazyVim.root(), count = 1 })
+    else
+      -- Show all if all hidden, hide all if any visible
+      local any_visible = vim.iter(terms):any(function(t)
+        return t.win ~= nil and vim.api.nvim_win_is_valid(t.win)
+      end)
+      for _, term in ipairs(terms) do
+        if any_visible then
+          term:hide()
+        else
+          term:show()
+        end
+      end
+    end
+  end
+end
+
+vim.keymap.set({ "n", "t" }, "<C-/>", smart_terminal_toggle, { desc = "Terminal (toggle all)" })
+vim.keymap.set({ "n", "t" }, "<C-_>", smart_terminal_toggle, { desc = "which_key_ignore" })
+
 -- Python Code running with uv
 vim.keymap.set("n", "<leader>tx", function()
   local current_file = vim.fn.expand("%:p")
@@ -76,8 +112,13 @@ end, { desc = "uv run" })
 -- Run current file with uv interactively
 vim.keymap.set("n", "<leader>tX", function()
   local current_file = vim.fn.expand("%:p")
-  require("snacks").terminal.open("uv run python -i " .. current_file, { auto_close = true })
+  require("snacks").terminal.open("uv run bpython -i " .. current_file, { auto_close = true })
 end, { desc = "uv run interactively" })
+
+-- Open Python Console with environment
+vim.keymap.set({ "n", "x" }, "<leader>tp", function()
+  require("snacks").terminal.toggle("uv run bpython")
+end, { desc = "Python Console" })
 
 -- DAP
 -- Start/Continue DAP
@@ -119,3 +160,80 @@ vim.keymap.set(
 -- Git Fugitive
 -- Keypmap to open Git pane
 vim.keymap.set("n", "<leader>gg", "<CMD>Git<CR>", { noremap = true, silent = true, desc = "Git Pane" })
+
+-- enable and disable copilot
+vim.keymap.set(
+  "n",
+  "<leader>ad",
+  "<CMD>Copilot disable<CR>",
+  { noremap = true, silent = true, desc = "Copilot disable" }
+)
+vim.keymap.set("n", "<leader>ae", "<CMD>Copilot enable<CR>", { noremap = true, silent = true, desc = "Copilot enable" })
+
+-- formatting
+
+vim.keymap.set({ "n", "x" }, "<leader>cf", function()
+  -- Format the buffer first
+  local ok, _ = pcall(LazyVim.format, { force = true })
+  if not ok then
+    vim.notify("⚠️ Formatting failed", vim.log.levels.ERROR)
+    return
+  end
+
+  -- Only try to organize imports for languages that have imports
+  local ft = vim.bo.filetype
+  local import_filetypes = {
+    "typescript",
+    "typescriptreact",
+    "javascript",
+    "javascriptreact",
+    "python",
+    "go",
+    "java",
+    "rust",
+  }
+
+  local should_organize = vim.tbl_contains(import_filetypes, ft)
+
+  if should_organize then
+    local organize = LazyVim.lsp.action["source.organizeImports"]
+    if organize then
+      local org_ok, _ = pcall(organize)
+      if org_ok then
+        vim.notify("✅ Formatted + Organized imports", vim.log.levels.INFO)
+      else
+        vim.notify("✅ Formatted", vim.log.levels.INFO)
+      end
+    else
+      vim.notify("✅ Formatted", vim.log.levels.INFO)
+    end
+  else
+    vim.notify("✅ Formatted", vim.log.levels.INFO)
+  end
+end, { desc = "Format + Organize Imports" })
+
+-- vim.keymap.set({ "n", "x" }, "<leader>cf", function()
+--   LazyVim.format({ force = true })
+--   LazyVim.lsp.action["source.organizeImports"]
+-- end, { desc = "Format" })
+
+-- vim.keymap.set({ "n", "x" }, "<leader>cf", function()
+--   -- Format the buffer first
+--   local ok, _ = pcall(LazyVim.format, { force = true })
+--   if ok then
+--     -- Try to organize imports if LSP supports it
+--     local organize = LazyVim.lsp.action["source.organizeImports"]
+--     if organize then
+--       local org_ok, err = pcall(organize)
+--       if org_ok then
+--         vim.notify("✅ Formatted + Organized imports", vim.log.levels.INFO)
+--       else
+--         vim.notify("⚠️ Organized imports failed: " .. tostring(err), vim.log.levels.WARN)
+--       end
+--     else
+--       vim.notify("⚠️ LSP does not support organize imports", vim.log.levels.WARN)
+--     end
+--   else
+--     vim.notify("⚠️ Formatting failed", vim.log.levels.ERROR)
+--   end
+-- end, { desc = "Format + Organize Imports" })

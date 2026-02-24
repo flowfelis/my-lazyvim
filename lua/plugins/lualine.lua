@@ -3,6 +3,30 @@ return {
   optional = true,
   event = "VeryLazy",
   opts = function(_, opts)
+    -- Terminal count indicator
+    table.insert(opts.sections.lualine_x, 1, {
+      function()
+        local terms = Snacks.terminal.list()
+        if #terms == 0 then
+          return ""
+        end
+        local visible = vim.iter(terms):fold(0, function(acc, t)
+          return acc + (t.win ~= nil and vim.api.nvim_win_is_valid(t.win) and 1 or 0)
+        end)
+        return " " .. visible .. "/" .. #terms
+      end,
+      cond = function()
+        return package.loaded["snacks"] ~= nil and #Snacks.terminal.list() > 0
+      end,
+      color = function()
+        local terms = Snacks.terminal.list()
+        local any_visible = vim.iter(terms):any(function(t)
+          return t.win ~= nil and vim.api.nvim_win_is_valid(t.win)
+        end)
+        return any_visible and { fg = "#a9b665" } or { fg = "#7c8a5e" }
+      end,
+    })
+
     table.insert(
       opts.sections.lualine_x,
       2,

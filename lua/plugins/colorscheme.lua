@@ -1,7 +1,7 @@
 vim.opt.background = "dark" -- or "light" for light mode
 return {
   -- add colorschemes
-  -- { "ellisonleao/gruvbox.nvim" },
+  { "ellisonleao/gruvbox.nvim" },
   -- { "sainnhe/gruvbox-material" },
   { "sainnhe/everforest" },
 
